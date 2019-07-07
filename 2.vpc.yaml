@@ -1,0 +1,24 @@
+Parameters:
+  VPCNetworkCIDR:
+    Description: The CIDR block for the entire VPC network
+    Type: String
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:
+        Ref: VPCNetworkCIDR
+      InstanceTenancy: default
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+Outputs:
+  VPC:
+    Description: 'VPC ID'
+    Value: !Ref VPC

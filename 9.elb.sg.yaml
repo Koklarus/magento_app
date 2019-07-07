@@ -1,0 +1,41 @@
+Parameters:
+  AccessCIDR:
+    Description: CIDR for allowed IPs
+    Type: String  
+  VpcId:
+    Description: VPC ID
+    Type: String
+Resources:
+  SecurityGroupInstance:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SG for EC2 Instance
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp:
+          Ref: AccessCIDR
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '3306'
+        ToPort: '3306'
+        CidrIp:
+          Ref: AccessCIDR
+      - IpProtocol: tcp
+        ToPort: '443'
+        FromPort: '443'
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+      VpcId:
+        Ref: VpcId
+Outputs:
+  SecurityGroupInstance:
+    Description: 'SecurityGroupInstance'
+    Value: !GetAtt SecurityGroupInstance.GroupId

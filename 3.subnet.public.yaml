@@ -1,0 +1,30 @@
+Parameters:
+  EC2Subnet:
+    Description: The CIDR block for the Public network
+    Type: String
+  VpcId:
+    Description: VPC ID
+    Type: String
+Resources:
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock:
+        Ref: EC2Subnet
+      AvailabilityZone:
+        Fn::Select:
+        - '0'
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      MapPublicIpOnLaunch: 'true'
+      VpcId:
+        Ref: VpcId
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+
+Outputs:
+  PublicSubnet:
+    Description: 'PublicSubnet'
+    Value: !Ref PublicSubnet

@@ -1,0 +1,36 @@
+Resources:
+  IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:*
+            Resource: 
+            - arn:aws:s3:::magento.stack/*
+            - arn:aws:s3:::magento.comments/*
+            - arn:aws:s3:::magento.raw.videos/*
+            - arn:aws:s3:::magento.filtered.videos/*
+        PolicyName: S3accessMagento
+  IAMProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+      - !Ref IAMRole
+
+Outputs:
+  IAMProfile:
+    Description: Amazon Aurora Endpoint to connect
+    Value: !Ref IAMProfile

@@ -1,0 +1,32 @@
+Parameters:
+  RDSCIDR:
+    Description: The CIDR block for the Public network
+    Type: String
+  VpcId:
+    Description: VPC ID
+    Type: String
+  AZ:
+    Description: Availability Zone
+    Type: String
+Resources: 
+  RDSSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock:
+        Ref: RDSCIDR
+      AvailabilityZone:
+        Fn::Select:
+        - Ref: AZ
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      MapPublicIpOnLaunch: 'false'
+      VpcId:
+        Ref: VpcId
+      Tags:
+      - Key: NameZ
+        Value:
+          Ref: AWS::StackName
+Outputs:
+  RDSSubnet:
+    Description: 'RDSSubnet'
+    Value: !Ref RDSSubnet

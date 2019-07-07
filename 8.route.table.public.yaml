@@ -1,0 +1,46 @@
+Parameters:
+  PublicSubnet:
+    Description: PublicSubnet
+    Type: String
+  VpcId:
+    Description: VPC ID
+    Type: String
+  InternetGateway:
+    Description: Serve as a NAT of selected VPC for public access
+    Type: String
+  DestinationCidrBlock:
+    Description: Public CIDR allowed to access
+    Type: String
+Resources:  
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VpcId
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+  AssociationRtToPubSub:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: RouteTable
+      SubnetId:
+        Ref: PublicSubnet
+  Route:
+    Type: AWS::EC2::Route
+    #DependsOn: AttachGatewayToVPC
+    Properties:
+      DestinationCidrBlock: 
+        Ref: DestinationCidrBlock
+      GatewayId:
+        Ref: InternetGateway
+      RouteTableId:
+        Ref: RouteTable
+  
+
+Outputs:
+  RouteTable:
+    Description: 'RouteTable'
+    Value: !Ref RouteTable

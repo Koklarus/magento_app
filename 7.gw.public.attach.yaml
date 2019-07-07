@@ -1,0 +1,15 @@
+Parameters:
+  InternetGateway:
+    Description: The CIDR block for the Public network
+    Type: String
+  VpcId:
+    Description: VPC ID
+    Type: String
+Resources:
+  AttachGatewayToVPC:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId:
+        Ref: InternetGateway
+      VpcId:
+        Ref: VpcId

@@ -1,0 +1,13 @@
+Resources:
+  InternetGateway:
+    #DependsOn: VPC
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+Outputs:
+  InternetGateway:
+    Description: 'InternetGateway'
+    Value: !Ref InternetGateway

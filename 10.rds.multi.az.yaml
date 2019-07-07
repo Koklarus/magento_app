@@ -1,0 +1,56 @@
+Parameters:
+  DBName:
+    Description: DB Name
+    Type: String  
+  DBInstanceClass:
+    Description: DB instance class
+    Type: String
+  SecurityGroupRDS:
+    Description: Security Group Instance
+    Type: String
+  RDSSubnetGroup:
+    Description: RDS Subnet Group
+    Type: String
+  DBMasterUsername:
+    Description: DB Master Username
+    Type: String
+  DBMasterUserPassword:
+    Description: DB Master User Password1!
+    Type: String
+  DBBackupRetentionPeriod:
+    Description: DB Backup Retention Period
+    Type: String
+  AllocatedStorage:
+    Description: DB allocated storage
+    Type: String
+Resources:
+  MySQLDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: !Ref DBName
+      DBInstanceClass: !Ref DBInstanceClass
+      Engine: MySQL
+      AllocatedStorage: !Ref AllocatedStorage
+      MasterUsername: !Ref DBMasterUsername
+      MasterUserPassword: !Ref DBMasterUserPassword
+      DBSubnetGroupName: !Ref RDSSubnetGroup
+      VPCSecurityGroups:
+      - !Ref SecurityGroupRDS
+      MultiAZ: 'True'
+      BackupRetentionPeriod: !Ref DBBackupRetentionPeriod
+      Tags:
+      - Key: Name
+        Value: !Sub MySQLDB-${AWS::StackName}
+Outputs:
+  RDSEndPoints:
+    Description: Amazon Aurora Endpoint to connect
+    Value: !Sub ${MySQLDB.Endpoint.Address}:${MySQLDB.Endpoint.Port}/${DBName}
+  DBName:
+    Description: MySQL DBName
+    Value: !Ref DBName
+  RDSEndPointAddress:
+    Description: Amazon Aurora Endpoint to connect
+    Value: !Sub ${MySQLDB.Endpoint.Address}
+  RDSEndPointPort:
+    Description: Amazon Aurora Endpoint to connect
+    Value: !Sub ${MySQLDB.Endpoint.Port}

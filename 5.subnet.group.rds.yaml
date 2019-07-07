@@ -1,0 +1,21 @@
+Parameters:
+  MainRDSSubnet:
+    Description: The CIDR block for the Public network
+    Type: String
+  SecondaryRDSSubnet:
+    Description: The CIDR block for the Public network
+    Type: String
+Resources:    
+  RDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    #DependsOn: AttachGatewayToVPC
+    Properties:
+      DBSubnetGroupDescription: Subnets available for the RDS DB Instance
+      SubnetIds:
+      - Ref: MainRDSSubnet
+      - Ref: SecondaryRDSSubnet
+
+Outputs:
+  RDSSubnetGroup:
+    Description: 'RDSSubnetGroup'
+    Value: !Ref RDSSubnetGroup

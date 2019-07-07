@@ -1,0 +1,38 @@
+Parameters:
+  IAMProfile:
+    Description: S3 management privileges
+    Type: String
+  MagentoImageId:
+    Description: Magento ImageId from aws marketplace
+    Type: String
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+  PrivateSubnets:
+    Description: EC2 subnets
+    Type: CommaDelimitedList
+  SecurityGroupInstance:
+    Description: EC2 subnets
+    Type: String
+Resources:    
+  MagentoAMI:
+    Type: AWS::EC2::Instance
+    #DependsOn:
+    #- MountTarget1
+    #- MountTarget2
+    Properties:
+      #KeyName: !Ref KeyPair
+      IamInstanceProfile: !Ref IAMProfile
+      ImageId: !Ref MagentoImageId
+      InstanceType: !Ref InstanceType
+      SubnetId:
+        !Select
+        - '0'
+        - !Ref PrivateSubnets
+      SecurityGroupIds:
+      - !Ref SecurityGroupInstance
+      Tags:
+      - Key: Application
+        Value: AWS Quick Start (Magento)
+      - Key: Name
+        Value: MagentoAMI (AWS Quick Start)
