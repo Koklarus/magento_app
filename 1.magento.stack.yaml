@@ -160,4 +160,22 @@ Resources:
       TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/12.ec2.magento.yaml
       TimeoutInMinutes: '60'
   
-  
+  EFSSecurityGroup:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/15.efs.sg.yaml
+      TimeoutInMinutes: '60'
+
+  EFS:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        PrivateSubnets: 
+          !Join 
+            - ","
+            - - !GetAtt MainRDSSubnet.Outputs.RDSSubnet
+              - !GetAtt SecondaryRDSSubnet.Outputs.RDSSubnet
+        SecurityGroupInstance: !GetAtt [ SecurityGroupInstance, Outputs.SecurityGroupInstance ]
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/14.efs.az.enabled.yaml
+      TimeoutInMinutes: '60'
+

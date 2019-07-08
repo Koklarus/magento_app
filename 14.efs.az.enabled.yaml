@@ -1,0 +1,49 @@
+Parameters:
+    PrivateSubnets:
+      Description: EC2 subnets
+      Type: CommaDelimitedList
+    #FileSystem:
+    #  Description: EFS file system
+    #  Type: String
+    EFSSecurityGroup:
+      Description: EFSS ecurity Group
+      Type: String
+
+Resources:
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      PerformanceMode: generalPurpose
+      Encrypted: true
+      FileSystemTags:
+      - Key: Name
+        Value: EFS AWS Quick Start
+  MountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SubnetId:
+        !Select
+        - '0'
+        - !Ref PrivateSubnets
+      SecurityGroups:
+      - !Ref EFSSecurityGroup
+  MountTarget2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SubnetId:
+        !Select
+        - '1'
+        - !Ref PrivateSubnets
+      SecurityGroups:
+      - !Ref EFSSecurityGroup
+  MagentoMainLogGroup:
+
+Outputs:
+  MountTarget1:
+    Description: 'Mount Target 1'
+    Value: !Ref MountTarget1
+  MountTarget2:
+    Description: 'Mount Target 2'
+    Value: !Ref MountTarget2

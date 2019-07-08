@@ -1,0 +1,25 @@
+Resources:
+  EFSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: EFS Security Group (AWS Quick Start)
+      VpcId: !Ref VPCID
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 2049
+        ToPort: 2049
+        CidrIp: !Ref VPCCIDR
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
+
+Outputs:
+  EFSSecurityGroup:
+    Description: EFS Security Group
+    Value: !Ref EFSSecurityGroup
