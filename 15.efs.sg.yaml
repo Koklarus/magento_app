@@ -1,14 +1,21 @@
+Parameters:
+  VpcId:
+    Description: VPC ID
+    Type: String
+  VPCNetworkCIDR:
+    Description: VPC CIDR
+    Type: String
 Resources:
   EFSSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: EFS Security Group (AWS Quick Start)
-      VpcId: !Ref VPCID
+      VpcId: !Ref VpcId
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: 2049
         ToPort: 2049
-        CidrIp: !Ref VPCCIDR
+        CidrIp: !Ref VPCNetworkCIDR
       SecurityGroupEgress:
       - IpProtocol: tcp
         FromPort: 80

@@ -10,14 +10,18 @@ Parameters:
   SecondarySubnet:
     Default: '10.10.10.64/27'
     Description: Subnet for EC2 instances
-    Type: String 
+    Type: String
+  VPCNetworkCIDR:
+    Default: '10.10.10.0/24'
+    Description: Subnet for EC2 instances
+    Type: String
 
 Resources:
   VPC:
     Type: AWS::CloudFormation::Stack
     Properties:
       Parameters:
-        VPCNetworkCIDR: '10.10.10.0/24'
+        VPCNetworkCIDR: !Ref VPCNetworkCIDR
       TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/2.vpc.yaml
       TimeoutInMinutes: '60'
   
@@ -163,6 +167,9 @@ Resources:
   EFSSecurityGroup:
     Type: AWS::CloudFormation::Stack
     Properties:
+      Parameters:
+        VPCNetworkCIDR: !Ref VPCNetworkCIDR
+        VpcId: !GetAtt [ VPC, Outputs.VPC ]
       TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/15.efs.sg.yaml
       TimeoutInMinutes: '60'
 
@@ -170,12 +177,12 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       Parameters:
+        EFSSecurityGroup: !GetAtt [ EFSSecurityGroup, Outputs.EFSSecurityGroup ]
         PrivateSubnets: 
           !Join 
             - ","
             - - !GetAtt MainRDSSubnet.Outputs.RDSSubnet
               - !GetAtt SecondaryRDSSubnet.Outputs.RDSSubnet
-        SecurityGroupInstance: !GetAtt [ SecurityGroupInstance, Outputs.SecurityGroupInstance ]
       TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/14.efs.az.enabled.yaml
       TimeoutInMinutes: '60'
 

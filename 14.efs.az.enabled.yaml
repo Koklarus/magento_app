@@ -38,7 +38,6 @@ Resources:
         - !Ref PrivateSubnets
       SecurityGroups:
       - !Ref EFSSecurityGroup
-  MagentoMainLogGroup:
 
 Outputs:
   MountTarget1:
