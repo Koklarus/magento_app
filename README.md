@@ -1,2 +1,2 @@
 # magento_app
-CloudFormation setup for a Magento e-commerce applicaiton setup
+CloudFormation templates for a Magento e-commerce applicaiton setup
