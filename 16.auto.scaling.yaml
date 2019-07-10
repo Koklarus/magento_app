@@ -1,0 +1,87 @@
+Parameters:
+  WebServerMinSize:
+    Description: Web Server Min Size
+    Type: String
+  WebServerMaxSize:
+    Description: Web Server Max Size
+    Type: String
+  DesiredCapacity:
+    Description: WebServer Desired Capacity
+    Type: String
+  MainSubnet:
+    Description: EC2 subnets
+    #Default: subnet-04b672eb3d25e28e1
+    Type: String  
+  SecondarySubnet:
+    Description: EC2 subnets
+    #Default: subnet-09e05fe3c67056f03
+    Type: String
+  MagentoImageId:
+    Description: Magento Image Id
+    Type: String
+  InstanceType:
+    Description: Instance Type
+    Type: String
+  SecurityGroupInstance:
+    Description: Security Group Instance
+    Type: String
+  #IAMProfile:
+  #  Description: IAM Profile
+  #  Type: String
+  IAMARN:
+    Description: IAM ARN
+    Type: String
+
+Resources:
+  EC2LunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties: 
+      LaunchTemplateData: 
+        ImageId: !Ref MagentoImageId
+        InstanceType: !Ref InstanceType
+        SecurityGroupIds:
+        - !Ref SecurityGroupInstance
+        IamInstanceProfile: 
+          Arn: !Ref IAMARN
+      #LaunchTemplateName: EC2LunchTemplate
+
+  AutoScaling:
+    #DependsOn: EC2LunchTemplate
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      #LaunchConfigurationName: !Ref AGLunchConf
+      MinSize: !Ref WebServerMinSize
+      MaxSize: !Ref WebServerMaxSize
+      DesiredCapacity: !Ref DesiredCapacity
+      MixedInstancesPolicy:
+        InstancesDistribution: 
+          OnDemandAllocationStrategy: prioritized
+          OnDemandPercentageAboveBaseCapacity: 50
+          SpotAllocationStrategy: lowest-price
+          SpotInstancePools: 1
+        LaunchTemplate:
+          LaunchTemplateSpecification:
+            LaunchTemplateId: !Ref EC2LunchTemplate
+            Version: '1'
+      VPCZoneIdentifier:
+        - !Ref MainSubnet
+        - !Ref SecondarySubnet
+      Tags:
+      - Key: Name
+        Value: !Sub ${AWS::StackName}-Web Server
+        PropagateAtLaunch: true
+
+  
+  WebServerTargetTrackingScalingPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref AutoScaling
+      Cooldown: '60'
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: 90.0
+  
+
+  #MixedInstancesPolicy:

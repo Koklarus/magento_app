@@ -186,3 +186,27 @@ Resources:
       TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/14.efs.az.enabled.yaml
       TimeoutInMinutes: '60'
 
+  #AutoScalingGrpup:
+  #  Type: AWS::CloudFormation::Stack
+  #  Properties:
+  #    Parameters:
+  #      VPCNetworkCIDR: !Ref VPCNetworkCIDR
+  #      VpcId: !GetAtt [ VPC, Outputs.VPC ]
+  #    TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/15.efs.sg.yaml
+  #    TimeoutInMinutes: '60'
+
+  AutoScalingGroup:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        IAMARN: !GetAtt [ IAMStack, Outputs.IAMARN ]
+        MagentoImageId: 'ami-0643b07891e9ebe76'
+        InstanceType: 't2.micro'
+        WebServerMinSize: '2'
+        WebServerMaxSize: '6'
+        DesiredCapacity: '4'
+        MainSubnet: !GetAtt [ MainRDSSubnet, Outputs.RDSSubnet ]
+        SecondarySubnet: !GetAtt [ SecondaryRDSSubnet, Outputs.RDSSubnet ]
+        SecurityGroupInstance: !GetAtt [ SecurityGroupInstance, Outputs.SecurityGroupInstanceName ]
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/16.auto.scaling.yaml
+      TimeoutInMinutes: '60'

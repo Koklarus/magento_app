@@ -39,3 +39,6 @@ Outputs:
   SecurityGroupInstance:
     Description: 'SecurityGroupInstance'
     Value: !GetAtt SecurityGroupInstance.GroupId
+  SecurityGroupInstanceName:
+    Description: 'SecurityGroupInstance'
+    Value: !Ref SecurityGroupInstance

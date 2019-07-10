@@ -34,3 +34,6 @@ Outputs:
   IAMProfile:
     Description: Amazon Aurora Endpoint to connect
     Value: !Ref IAMProfile
+  IAMARN:
+    Description: 'SecurityGroupARN'
+    Value: !GetAtt IAMProfile.Arn

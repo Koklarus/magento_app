@@ -30,3 +30,6 @@ Outputs:
   RDSSubnet:
     Description: 'RDSSubnet'
     Value: !Ref RDSSubnet
+  RDSSubnetID:
+    Description: 'RDSSubnet'
+    Value: !GetAtt RDSSubnet.VpcId
