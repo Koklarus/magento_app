@@ -15,6 +15,14 @@ Parameters:
     Default: '10.10.10.0/24'
     Description: Subnet for EC2 instances
     Type: String
+  LoadBalancerPort:
+    Default: 80
+    Description: Load Balancer Port
+    Type: String
+  InstancePort:
+    Default: 80
+    Description: Instance Port
+    Type: String
 
 Resources:
   VPC:
@@ -36,7 +44,7 @@ Resources:
       TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/3.subnet.public.yaml
       TimeoutInMinutes: '60'
   
-  MainRDSSubnet:
+  PrivateMainSubnet:
     Type: AWS::CloudFormation::Stack
     Properties:
       Parameters:
@@ -47,7 +55,7 @@ Resources:
       TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/4.subnet.rds.yaml
       TimeoutInMinutes: '60'
 
-  SecondaryRDSSubnet:
+  PrivateSecondarySubnet:
     Type: AWS::CloudFormation::Stack
     Properties:
       Parameters:
@@ -79,15 +87,15 @@ Resources:
       TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/7.gw.public.attach.yaml
       TimeoutInMinutes: '60'
 
-  RDSSubnetGroup:
+  PrivateSubnetGroup:
     #DependsOn: AttachGatewayToVPC
     Type: AWS::CloudFormation::Stack
     Properties:
       Parameters:
-        MainRDSSubnet:
-          !GetAtt [ MainRDSSubnet, Outputs.RDSSubnet ]
-        SecondaryRDSSubnet:
-          !GetAtt [ SecondaryRDSSubnet, Outputs.RDSSubnet ]
+        PrivateMainSubnet:
+          !GetAtt [ PrivateMainSubnet, Outputs.RDSSubnet ]
+        PrivateSecondarySubnet:
+          !GetAtt [ PrivateSecondarySubnet, Outputs.RDSSubnet ]
       TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/5.subnet.group.rds.yaml
       TimeoutInMinutes: '60'
 
@@ -135,7 +143,7 @@ Resources:
         AllocatedStorage: '5'
         DBMasterUsername: 'admin'
         DBMasterUserPassword: 'Password1!'
-        RDSSubnetGroup: !GetAtt [ RDSSubnetGroup, Outputs.RDSSubnetGroup ]
+        PrivateSubnetGroup: !GetAtt [ PrivateSubnetGroup, Outputs.PrivateSubnetGroup ]
         DBBackupRetentionPeriod: '7'
         SecurityGroupRDS: !GetAtt [ SecurityGroupRDS, Outputs.SecurityGroupRDS ]
       TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/10.rds.multi.az.yaml
@@ -148,21 +156,21 @@ Resources:
       #Capabilities: CAPABILITY_NAMED_IAM
       TimeoutInMinutes: '60'
   
-  MagentoEC2:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      Parameters:
-        IAMProfile: !GetAtt [ IAMStack, Outputs.IAMProfile ]
-        MagentoImageId: 'ami-0643b07891e9ebe76'
-        InstanceType: 't2.micro'
-        PrivateSubnets: 
-          !Join 
-            - ","
-            - - !GetAtt MainRDSSubnet.Outputs.RDSSubnet
-              - !GetAtt SecondaryRDSSubnet.Outputs.RDSSubnet
-        SecurityGroupInstance: !GetAtt [ SecurityGroupInstance, Outputs.SecurityGroupInstance ]
-      TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/12.ec2.magento.yaml
-      TimeoutInMinutes: '60'
+  #MagentoEC2:
+  #  Type: AWS::CloudFormation::Stack
+  #  Properties:
+  #    Parameters:
+  #      IAMProfile: !GetAtt [ IAMStack, Outputs.IAMProfile ]
+  #      MagentoImageId: 'ami-0643b07891e9ebe76'
+  #      InstanceType: 't2.micro'
+  #      PrivateSubnets: 
+  #        !Join 
+  #          - ","
+  #          - - !GetAtt PrivateMainSubnet.Outputs.RDSSubnet
+  #            - !GetAtt PrivateSecondarySubnet.Outputs.RDSSubnet
+  #      SecurityGroupInstance: !GetAtt [ SecurityGroupInstance, Outputs.SecurityGroupInstance ]
+  #    TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/12.ec2.magento.yaml
+  #    TimeoutInMinutes: '60'
   
   EFSSecurityGroup:
     Type: AWS::CloudFormation::Stack
@@ -181,8 +189,8 @@ Resources:
         PrivateSubnets: 
           !Join 
             - ","
-            - - !GetAtt MainRDSSubnet.Outputs.RDSSubnet
-              - !GetAtt SecondaryRDSSubnet.Outputs.RDSSubnet
+            - - !GetAtt PrivateMainSubnet.Outputs.RDSSubnet
+              - !GetAtt PrivateSecondarySubnet.Outputs.RDSSubnet
       TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/14.efs.az.enabled.yaml
       TimeoutInMinutes: '60'
 
@@ -194,6 +202,18 @@ Resources:
   #      VpcId: !GetAtt [ VPC, Outputs.VPC ]
   #    TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/15.efs.sg.yaml
   #    TimeoutInMinutes: '60'
+  PublicLoadBalancer:
+    DependsOn: 
+    - InternetGateway
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        LoadBalancerPort: !Ref LoadBalancerPort
+        InstancePort: !Ref InstancePort
+        PublicSubnet: !GetAtt [ PublicSubnet, Outputs.PublicSubnet ]
+        SecurityGroupInstance: !GetAtt [ SecurityGroupInstance, Outputs.SecurityGroupInstanceName ]
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/17.elb.public.yaml
+      TimeoutInMinutes: '60'
 
   AutoScalingGroup:
     Type: AWS::CloudFormation::Stack
@@ -203,10 +223,14 @@ Resources:
         MagentoImageId: 'ami-0643b07891e9ebe76'
         InstanceType: 't2.micro'
         WebServerMinSize: '2'
-        WebServerMaxSize: '6'
-        DesiredCapacity: '4'
-        MainSubnet: !GetAtt [ MainRDSSubnet, Outputs.RDSSubnet ]
-        SecondarySubnet: !GetAtt [ SecondaryRDSSubnet, Outputs.RDSSubnet ]
+        WebServerMaxSize: '4'
+        DesiredCapacity: '2'
+        MainSubnet: !GetAtt [ PrivateMainSubnet, Outputs.RDSSubnet ]
+        SecondarySubnet: !GetAtt [ PrivateSecondarySubnet, Outputs.RDSSubnet ]
         SecurityGroupInstance: !GetAtt [ SecurityGroupInstance, Outputs.SecurityGroupInstanceName ]
+        PublicLoadBalancer: !GetAtt [ PublicLoadBalancer, Outputs.PublicLoadBalancer ]
       TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/16.auto.scaling.yaml
       TimeoutInMinutes: '60'
+
+
+

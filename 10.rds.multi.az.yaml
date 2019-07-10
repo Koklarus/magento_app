@@ -8,7 +8,7 @@ Parameters:
   SecurityGroupRDS:
     Description: Security Group Instance
     Type: String
-  RDSSubnetGroup:
+  PrivateSubnetGroup:
     Description: RDS Subnet Group
     Type: String
   DBMasterUsername:
@@ -33,7 +33,7 @@ Resources:
       AllocatedStorage: !Ref AllocatedStorage
       MasterUsername: !Ref DBMasterUsername
       MasterUserPassword: !Ref DBMasterUserPassword
-      DBSubnetGroupName: !Ref RDSSubnetGroup
+      DBSubnetGroupName: !Ref PrivateSubnetGroup
       VPCSecurityGroups:
       - !Ref SecurityGroupRDS
       MultiAZ: 'True'

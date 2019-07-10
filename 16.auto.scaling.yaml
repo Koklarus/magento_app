@@ -31,6 +31,9 @@ Parameters:
   IAMARN:
     Description: IAM ARN
     Type: String
+  PublicLoadBalancer:
+    Description: Public Load Balancer
+    Type: String
 
 Resources:
   EC2LunchTemplate:
@@ -53,16 +56,21 @@ Resources:
       MinSize: !Ref WebServerMinSize
       MaxSize: !Ref WebServerMaxSize
       DesiredCapacity: !Ref DesiredCapacity
+      LoadBalancerNames: 
+        - !Ref PublicLoadBalancer
       MixedInstancesPolicy:
         InstancesDistribution: 
           OnDemandAllocationStrategy: prioritized
           OnDemandPercentageAboveBaseCapacity: 50
           SpotAllocationStrategy: lowest-price
-          SpotInstancePools: 1
+          SpotInstancePools: 2
         LaunchTemplate:
           LaunchTemplateSpecification:
             LaunchTemplateId: !Ref EC2LunchTemplate
             Version: '1'
+          Overrides:
+            - InstanceType: 't2.micro'
+            - InstanceType: 't3.nano'
       VPCZoneIdentifier:
         - !Ref MainSubnet
         - !Ref SecondarySubnet
