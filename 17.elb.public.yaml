@@ -1,8 +1,11 @@
 Parameters:
   PublicSubnet:
-    Description: Public Subnet
-    Type: String  
-  SecurityGroupInstance:
+    Description: Public Subnet for AZ1
+    Type: String 
+  PublicSubnetAZ2:
+    Description: Public Subnet for AZ2
+    Type: String 
+  ELBSecurityGroup:
     Description: Security Group Instance
     Type: String
   LoadBalancerPort:
@@ -20,16 +23,22 @@ Resources:
       Scheme: internet-facing
       Subnets:
         - !Ref PublicSubnet
+        - !Ref PublicSubnetAZ2
       SecurityGroups:
-        - !Ref SecurityGroupInstance
+        - !Ref ELBSecurityGroup
       Listeners:
         - LoadBalancerPort: !Ref LoadBalancerPort
           InstancePort: !Ref InstancePort
           Protocol: HTTP
+          InstanceProtocol: HTTP
       Tags:
       - Key: Name
         Value: MagentoWebserverALB
+  
+  
 Outputs:
   PublicLoadBalancer:
     Description: 'RDSSubnet'
     Value: !Ref PublicLoadBalancer
+  DNS:
+    Value: !GetAtt PublicLoadBalancer.DNSName

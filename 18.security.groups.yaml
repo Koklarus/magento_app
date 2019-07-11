@@ -1,0 +1,86 @@
+Parameters:
+  VpcId:
+    Description: VPC ID 
+    Type: String
+  VPCNetworkCIDR:
+    Description: The CIDR block for VPC
+    Type: String
+
+Resources:
+  SecurityGroupRDS:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow access to MySQL Port (AWS Quick Start)
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 3306
+        ToPort: 3306
+        SourceSecurityGroupId: !GetAtt EC2SecurityGroup.GroupId
+  PublicLoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ELB Security Group (AWS Quick Start)
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: App Server Security Group (AWS Quick Start)
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        SourceSecurityGroupId: !GetAtt PublicLoadBalancerSecurityGroup.GroupId
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        SourceSecurityGroupId: !GetAtt PublicLoadBalancerSecurityGroup.GroupId
+  EFSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Database Security Group (AWS Quick Start)
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 2049
+        ToPort: 2049
+        CidrIp: !Ref VPCNetworkCIDR
+  SecurityGroupRuleAppDB:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+      DestinationSecurityGroupId: !GetAtt SecurityGroupRDS.GroupId
+      GroupId: !GetAtt EC2SecurityGroup.GroupId
+  SecurityGroupRuleAppEFS:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      IpProtocol: tcp
+      FromPort: 2049
+      ToPort: 2049
+      DestinationSecurityGroupId: !GetAtt EFSSecurityGroup.GroupId
+      GroupId: !GetAtt EC2SecurityGroup.GroupId
+Outputs:
+  SecurityGroupRDS:
+    Description: MySQL Security Group
+    Value: !Ref SecurityGroupRDS
+  PublicLoadBalancerSecurityGroup:
+    Description: ELB Security Group
+    Value: !Ref PublicLoadBalancerSecurityGroup
+  EC2SecurityGroup:
+    Description: Web Server Security Group
+    Value: !Ref EC2SecurityGroup
+  EFSSecurityGroup:
+    Description: EFS Security Group
+    Value: !Ref EFSSecurityGroup

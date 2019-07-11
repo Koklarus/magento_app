@@ -2,6 +2,9 @@ Parameters:
   PublicSubnet:
     Description: PublicSubnet
     Type: String
+  PublicSubnetAZ2:
+    Description: PublicSubnet
+    Type: String
   VpcId:
     Description: VPC ID
     Type: String
@@ -15,29 +18,30 @@ Resources:
   RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId:
-        Ref: VpcId
+      VpcId: !Ref VpcId
       Tags:
       - Key: Name
-        Value:
-          Ref: AWS::StackName
-  AssociationRtToPubSub:
+        Value: !Ref AWS::StackName
+
+  AssociatePublicSubnetAZ1toRoute:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId:
-        Ref: RouteTable
-      SubnetId:
-        Ref: PublicSubnet
+      RouteTableId: !Ref RouteTable
+      SubnetId: !Ref PublicSubnet
+
+  AssociatePublicSubnetAZ2toRoute:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTable
+      SubnetId: !Ref PublicSubnetAZ2
+  
   Route:
     Type: AWS::EC2::Route
     #DependsOn: AttachGatewayToVPC
     Properties:
-      DestinationCidrBlock: 
-        Ref: DestinationCidrBlock
-      GatewayId:
-        Ref: InternetGateway
-      RouteTableId:
-        Ref: RouteTable
+      DestinationCidrBlock: !Ref DestinationCidrBlock
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref RouteTable
   
 
 Outputs:

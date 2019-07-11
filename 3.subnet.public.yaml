@@ -1,19 +1,22 @@
 Parameters:
-  EC2Subnet:
+  Subnet:
     Description: The CIDR block for the Public network
     Type: String
   VpcId:
     Description: VPC ID
+    Type: String
+  AZ:
+    Description: Availability Zone
     Type: String
 Resources:
   PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
       CidrBlock:
-        Ref: EC2Subnet
+        Ref: Subnet
       AvailabilityZone:
         Fn::Select:
-        - '0'
+        - !Ref AZ
         - Fn::GetAZs:
             Ref: AWS::Region
       MapPublicIpOnLaunch: 'true'

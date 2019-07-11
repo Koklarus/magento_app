@@ -22,12 +22,12 @@ Parameters:
   InstanceType:
     Description: Instance Type
     Type: String
-  SecurityGroupInstance:
+  EC2SecurityGroup:
     Description: Security Group Instance
     Type: String
-  #IAMProfile:
-  #  Description: IAM Profile
-  #  Type: String
+  IAMProfile:
+    Description: IAM Profile
+    Type: String
   IAMARN:
     Description: IAM ARN
     Type: String
@@ -43,7 +43,7 @@ Resources:
         ImageId: !Ref MagentoImageId
         InstanceType: !Ref InstanceType
         SecurityGroupIds:
-        - !Ref SecurityGroupInstance
+        - !Ref EC2SecurityGroup
         IamInstanceProfile: 
           Arn: !Ref IAMARN
       #LaunchTemplateName: EC2LunchTemplate
