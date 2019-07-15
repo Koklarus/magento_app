@@ -1,0 +1,1 @@
+{"errorMessage": "'Records'", "errorType": "KeyError", "stackTrace": ["  File \"/var/task/video-filter.py\", line 6, in handler\n    for record in event['Records']:\n"]}

@@ -1,0 +1,24 @@
+Parameters:
+  LambdaFunction:
+    Description: Lambda Function Nmae
+    Type: String
+  BucketArn:
+    Description: Lambda Function Nmae
+    Type: String
+
+Resources:
+  LambdaInvocationPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaFunction
+      Principal: s3.amazonaws.com
+      SourceArn: !Ref BucketArn
+
+#Outputs:
+#  IAMProfile:
+#    Description: Amazon Aurora Endpoint to connect
+#    Value: !Ref IAMProfile
+#  IAMARN:
+#    Description: 'SecurityGroupARN'
+#    Value: !GetAtt IAMProfile.Arn

@@ -1,0 +1,71 @@
+Parameters:
+  DataSrcBucket:
+    Description: Raw videos bucket
+    Type: String
+  DestinationBucket:
+    Description: Raw videos bucket
+    Type: String
+
+Resources:
+  IAMRoleARN:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:*
+            Resource: 
+            - !Sub arn:aws:s3:::${DataSrcBucket}
+            - !Sub arn:aws:s3:::${DestinationBucket}
+        PolicyName: S3accessMagento
+  #IAMProfile:
+  #  Type: AWS::IAM::InstanceProfile
+  #  Properties:
+  #    Path: /
+  #    Roles:
+  #    - !Ref IAMRole
+
+Outputs:
+  IAMRoleARN:
+    Description: Amazon Aurora Endpoint to connect
+    Value: !GetAtt IAMRoleARN.Arn
+#  IAMARN:
+#    Description: 'SecurityGroupARN'
+#    Value: !GetAtt IAMProfile.Arn
+
+
+#    "Statement": [
+#{
+#            "Effect": "Allow",
+#            "Action": [
+#                "s3:ListAllMyBuckets",
+#                "s3:GetBucketLocation"
+#            ],
+#            "Resource": "*"
+#        },
+#        {
+#            "Effect": "Allow",
+#            "Action": "s3:*",
+#            "Resource": [
+#                "arn:aws:s3:::ExampleBucketName",
+#                "arn:aws:s3:::ExampleBucketName/*"
+#
+#  "Statement": [
+#    {
+#      "Effect": "Allow",
+#      "Principal": {
+#        "AWS": "arn:aws:iam::123456789012:root",
+#        "Service": "lambda.amazonaws.com"
+#      },
+#      "Action": "sts:AssumeRole"

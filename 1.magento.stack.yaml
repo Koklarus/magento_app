@@ -34,7 +34,7 @@ Resources:
     Properties:
       Parameters:
         VPCNetworkCIDR: !Ref VPCNetworkCIDR
-      TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/2.vpc.yaml
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/Run/2.vpc.yaml
       TimeoutInMinutes: '60'
   
   PublicSubnet:
@@ -201,5 +201,9 @@ Resources:
       TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/16.auto.scaling.yaml
       TimeoutInMinutes: '60'
 
-
-
+  S3Buckets:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      IAMProfile: !GetAtt [ IAMStack, Outputs.IAMProfile ]
+      TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/19.s3.buckets.yaml
+      TimeoutInMinutes: '60'

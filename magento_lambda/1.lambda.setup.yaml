@@ -1,0 +1,159 @@
+Parameters:
+  LambdaBucket:
+    Description: Lambda Funciton Bucket
+    Default: lambda-function-2019-07-12
+    Type: String
+  LambdaZipBucket:
+    Description: Lambda Funciton Bucket Key
+    Default: 'video-filter.zip'
+    Type: String
+  Handler:
+    Description: Lambda function handler
+    Type: String
+    Default: handler
+  DataSrcBucket:
+    Description: Raw videos bucket
+    Type: String
+    Default: magento.raw.videos
+  DestinationBucket:
+    Description: Raw videos bucket
+    Type: String
+    Default: magento.filtered.videos
+  LabelsFilter:
+    Type: String
+    Default: "[\"War\", \"Gun\", \"Weapon\", \"Fight\"]"
+  Region:
+    Type: String
+    Default: eu-central-1
+
+Resources:
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "TestFkngShit"
+      Runtime: python3.7
+      Role: !GetAtt IAMRoleARN.Arn
+      Code:
+        S3Bucket: !Ref LambdaBucket
+        S3Key: !Ref LambdaZipBucket
+      Handler: !Sub video-filter.${Handler}
+      Environment:
+        Variables:
+          DestinationBucket: !Ref DestinationBucket
+          LabelsFilter: !Ref LabelsFilter
+          Region: !Ref Region
+  
+  S3Bucket:
+    DependsOn: 
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref DataSrcBucket
+      #NotificationConfiguration:
+      #  LambdaConfigurations:
+      #  - Event: "s3:ObjectCreated:*"
+      #    Function: "arn:aws:lambda:eu-central-1:082260158798:function:TestFkngShit"
+  
+  S3DestinationBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref DestinationBucket
+  
+  LambdaInvocationPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt LambdaFunction.Arn
+      Principal: s3.amazonaws.com
+      SourceArn: !Sub arn:aws:s3:::${DataSrcBucket}/*
+
+  IAMRoleARN:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:*
+            Resource: 
+            - !Sub arn:aws:s3:::${DataSrcBucket}/*
+            - !Sub arn:aws:s3:::${DestinationBucket}/*
+        PolicyName: S3accessMagento
+      - PolicyDocument:
+          Statement:
+          - Effect: "Allow"
+            Action:
+            - "rekognition:*"
+            Resource: "*"
+        PolicyName: RekognitionRights
+      - PolicyDocument:
+          Statement:
+          - Effect: "Allow"
+            Action:
+            - "logs:CreateLogGroup"
+            - "logs:CreateLogStream"
+            - "logs:PutLogEvents"
+            Resource: "*"
+        PolicyName: LogsStream
+  
+
+
+  #LambdaFunction:
+  #  DependsOn:
+  #    - LambdaIAMRoleARN
+  #  Type: AWS::CloudFormation::Stack
+  #  Properties:
+  #    Parameters:
+  #      LambdaBucket: !Ref LambdaBucket
+  #      LambdaZipBucket: !Ref LambdaZipBucket
+  #      DataSrcBucket: !Ref DataSrcBucket
+  #      Handler: !Ref Handler
+  #      IAMRoleARN: !GetAtt LambdaIAMRoleARN.Outputs.IAMRoleARN
+  #    TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/2.lambda.function.yaml
+  #    TimeoutInMinutes: '60'
+ 
+  #LambdaInvocationPermission:
+  #  Type: AWS::CloudFormation::Stack
+  #  Properties:
+  #    Parameters:
+  #      LambdaFunction: !Ref LambdaFunction
+  #      BucketArn: !GetAtt RawDataSrcBucket.Outputs.RawDataSrcBucketArn
+  #    TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/3.policy.s3.yaml
+  #    TimeoutInMinutes: '60'
+
+  #RawDataSrcBucket:
+  #  #DependsOn: LambdaInvocationPermission
+  #  Type: AWS::CloudFormation::Stack
+  #  Properties:
+  #    Parameters:
+  #      LambdaFunction: !Ref LambdaFunction
+  #      BucketName: !Ref DataSrcBucket
+  #      LambdaFunctionArn: !GetAtt LambdaFunction.Outputs.LambdaFunctionArn
+  #    TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/4.bucket.s3.yaml
+  #    TimeoutInMinutes: '60'
+
+  #FormatedDestinationBucket:
+  #  Type: AWS::CloudFormation::Stack
+  #  Properties:
+  #    Parameters:
+  #      BucketName: !Ref DestinationBucket
+  #    TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/4.bucket.s3.yaml
+  #    TimeoutInMinutes: '60'
+
+  #LambdaIAMRoleARN:
+  #  Type: AWS::CloudFormation::Stack
+  #  Properties:
+  #    Parameters:
+  #      DataSrcBucket: !Ref DataSrcBucket
+  #      DestinationBucket: !Ref DestinationBucket
+  #    TemplateURL: https://s3.eu-central-1.amazonaws.com/magento.stack/5.policy.lambda.yaml
+  #    TimeoutInMinutes: '60'

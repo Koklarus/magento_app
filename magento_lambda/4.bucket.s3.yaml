@@ -1,0 +1,43 @@
+Parameters:
+  BucketName:
+    Description: S3 Bucket
+    Type: String
+  LambdaFunction:
+    Description: Lambda Function Nmae
+    Type: String
+  LambdaFunctionArn:
+    Description: Lambda Function ARN
+    Type: String
+
+Resources:
+  S3Bucket:
+    #DependsOn: LambdaInvocationPermission
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${BucketName}
+      NotificationConfiguration:
+        LambdaConfigurations:
+        - Event: 's3:ObjectCreated:*'
+          Function: !Ref LambdaFunctionArn
+  LambdaInvocationPermission:
+    #DependsOn: S3Bucket
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaFunction
+      Principal: s3.amazonaws.com
+      SourceArn: !Sub arn:aws:s3:::${BucketName}/*
+  #ApplyNotification:
+  #  Type: Custom::ApplyNotification
+  #  Properties:
+  #    ServiceToken: !GetAtt 'ApplyBucketNotificationFunction.Arn'
+  #    S3Bucket: !Ref 'TestS3Bucket'
+  #    FunctionARN: !GetAtt 'TestEventFunction.Arn'
+  #    NotificationId: S3ObjectCreatedEvent
+Outputs:
+  S3Bucket:
+    Description: S3 Bucket
+    Value: !Ref S3Bucket
+  #RawDataSrcBucketArn:
+  #  Description: S3 Bucket
+  #  Value: !GetAtt S3Bucket.Arn

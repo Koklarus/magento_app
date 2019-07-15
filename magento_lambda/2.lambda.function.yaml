@@ -1,0 +1,50 @@
+Parameters:
+  #DataSrcBucket:
+  #  Description: Raw videos bucket
+  #  Type: String
+  LambdaBucket:
+    Description: Lambda funciton bucket
+    Type: String
+  LambdaZipBucket:
+    Description: Lambda funciton bucket key 
+    Type: String
+  Handler:
+    Description: Lambda function handler
+    Type: String
+  IAMRoleARN:
+    Description: Lambda function IAM role
+    Type: String
+  DestinationtBucket:
+    Description: Bucket for filtered videos
+    Type: String
+  LabelsFilter:
+    Description: List of filter labels
+    Type: CommaDelimitedList
+
+Resources:
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.7
+      Role: !Ref IAMRoleARN
+      Code:
+        S3Bucket: !Ref LambdaBucket
+        S3Key: !Ref LambdaZipBucket
+      Handler: !Sub video-filter.${Handler}
+      Environment:
+        Variables:
+          #DataSrcBucket: !Ref DataSrcBucket
+          DestinationtBucket: !Ref DestinationBucket
+          LabelsFilter: !Ref LabelsFilter
+
+
+Outputs:
+  LambdaFunctionArn:
+    Description: Lambda function ARN
+    Value: !GetAtt LambdaFunction.Arn
+      #Events:
+      #  VideoFilter:
+      #    Type: S3
+      #    Properties:
+      #      Bucket: !Ref DataSrcBucket
+      #      Events: s3:ObjectCreated:*
