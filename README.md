@@ -20,7 +20,11 @@
   aws s3api create-bucket --bucket $templates_bucket --region $region --profile $profile
   
   cd magento_app
-  
+  ```
+  > Atention ! Before Stack creation, overide default Parameters values in `1.magento.stack.yaml` file:
+  > - **SSLCertificateId** 
+  > - **TemplatesBucket**
+  ``` bash
   aws s3 sync . s3://$templates_bucket --exclude "*git*" --profile $profile
   ```
 - Create CF Stack:
@@ -40,12 +44,17 @@ High Level Diagram Overview:
 - `git clone https://github.com/Koklarus/magento_app.git`
 - `cd magento_app/magento_lambda`
 - `export profile=<your aws profile>`
+- `export lambda_bucket="Bucket where zipped lambda deploymnet package will be stored"`
 - Upload Lambda function to S3 as a zip file:
-  ``` bash 
-  export lambda_bucket=$(aws cloudformation describe-stacks --stack-name magento --profile $profile | jq -r '.Stacks | .[] | .Parameters | .[] | select(.ParameterKey=="LambdaBucket") | .ParameterValue')
-  
-  zip video-filter.zip video-filter.py &&  aws s3 cp video-filter.zip s3://$lambda_bucket --profile $profile 
+  ``` bash   
+  aws s3 cp video-filter.zip s3://$lambda_bucket --profile $profile 
   ```
+  > Atention ! Before Stack creation, overide default Parameters values in `1.lambda.setup.yaml` file:
+  > - **LambdaBucket**
+  > - **DataSrcBucket**
+  > - **DestinationBucket**
+
+  ``` bash
 - `aws cloudformation create-stack --stack-name <stack-name> --template-body file://1.lambda.setup.yaml --capabilities CAPABILITY_IAM --profile $profile`
 - Check progress: `aws cloudformation describe-stacks --stack-name <stack-name> --profile $profile`
 - Add Lambda function event notification trigger to S3 bucket, run in bash:
