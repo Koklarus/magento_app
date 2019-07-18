@@ -2,9 +2,6 @@ Parameters:
     PrivateSubnets:
       Description: EC2 subnets
       Type: CommaDelimitedList
-    #FileSystem:
-    #  Description: EFS file system
-    #  Type: String
     EFSSecurityGroup:
       Description: EFSS ecurity Group
       Type: String

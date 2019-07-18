@@ -3,6 +3,7 @@ import json
 import os
 from time import sleep
 import logging
+import ast
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -12,7 +13,7 @@ s3_resource = boto3.resource('s3')
 sqs = boto3.client('sqs')
 
 jobFound = False
-non_compliant = set(os.environ['LabelsFilter'])
+non_compliant = set(ast.literal_eval(os.environ['LabelsFilter']))
 DestinationBucket = os.environ['DestinationBucket']
 region = os.environ['Region']
 
@@ -35,13 +36,15 @@ def detect_labels(bucket, key, max_labels=10, min_confidence=70, region=region):
 		if response['Labels']:
 			found_keys = set([item['Label']['Name'] for item in response['Labels']])
 			logger.info("Rekognition labels found: \n {0}".format(response['Labels']))
-		if non_compliant.intersection(found_keys):
-			logger.info("Following non-compliant patterns have been detected: \n {0}".format(non_compliant.intersection(found_keys)))
-			s3_client.delete_object(Bucket = bucket, Key = key)
-		else:
-			logger.info("Video {0} has passed compliance check.".format(key))
-			s3_resource.meta.client.copy({'Bucket': bucket, 'Key': key}, DestinationBucket, key)
-			logger.info("Video {0} has been moved to publicly accessable bucket {1} ".format(key, DestinationBucket))
-			s3_client.delete_object(Bucket = bucket, Key = key)
-			logger.info("Video {0} has been removed from initial bucket {1} ".format(key, bucket))
-		finish = True
+			if set(non_compliant).intersection(found_keys):
+				logger.info("Following non-compliant patterns have been detected: \n {0}".format(non_compliant.intersection(found_keys)))
+				s3_client.delete_object(Bucket = bucket, Key = key)
+				logger.info("Video {0} has been removed from initial bucket {1} ".format(key, bucket))
+			else:
+				logger.info("Following patterns have been detected: \n {0}".format(found_keys))
+				logger.info("Video {0} has passed compliance check.".format(key))
+				s3_resource.meta.client.copy({'Bucket': bucket, 'Key': key}, DestinationBucket, key)
+				logger.info("Video {0} has been moved to publicly accessable bucket {1} ".format(key, DestinationBucket))
+				s3_client.delete_object(Bucket = bucket, Key = key)
+				logger.info("Video {0} has been removed from initial bucket {1} ".format(key, bucket))
+			finish = True

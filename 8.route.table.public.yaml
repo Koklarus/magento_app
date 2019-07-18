@@ -37,7 +37,6 @@ Resources:
   
   Route:
     Type: AWS::EC2::Route
-    #DependsOn: AttachGatewayToVPC
     Properties:
       DestinationCidrBlock: !Ref DestinationCidrBlock
       GatewayId: !Ref InternetGateway

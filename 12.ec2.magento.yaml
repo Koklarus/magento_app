@@ -17,11 +17,7 @@ Parameters:
 Resources:    
   MagentoAMI:
     Type: AWS::EC2::Instance
-    #DependsOn:
-    #- MountTarget1
-    #- MountTarget2
     Properties:
-      #KeyName: !Ref KeyPair
       IamInstanceProfile: !Ref IAMProfile
       ImageId: !Ref MagentoImageId
       InstanceType: !Ref InstanceType

@@ -14,12 +14,14 @@ Parameters:
   InstancePort:
     Description: Instance Port
     Type: String
+  SSLCertificateId:
+    Description: AWS Certificate ID
+    Type: String
 
 Resources:
   PublicLoadBalancer:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
-      #Type: application
       Scheme: internet-facing
       Subnets:
         - !Ref PublicSubnet
@@ -29,12 +31,12 @@ Resources:
       Listeners:
         - LoadBalancerPort: !Ref LoadBalancerPort
           InstancePort: !Ref InstancePort
-          Protocol: HTTP
+          Protocol: HTTPS
           InstanceProtocol: HTTP
+          SSLCertificateId: !Sub arn:aws:acm:${AWS::Region}:${AWS::AccountId}:certificate/${SSLCertificateId}
       Tags:
       - Key: Name
         Value: MagentoWebserverALB
-  
   
 Outputs:
   PublicLoadBalancer:

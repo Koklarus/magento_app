@@ -3,6 +3,10 @@ Parameters:
     Description: Lambda Funciton Bucket
     Default: lambda-function-2019-07-12
     Type: String
+  FunctionName:
+    Description: Lambda Funciton Name
+    Default: non-compliant-video-filter
+    Type: String
   LambdaZipBucket:
     Description: Lambda Funciton Bucket Key
     Default: 'video-filter.zip'
@@ -16,7 +20,7 @@ Parameters:
     Type: String
     Default: magento.raw.videos
   DestinationBucket:
-    Description: Raw videos bucket
+    Description: Filtered videos 
     Type: String
     Default: magento.filtered.videos
   LabelsFilter:
@@ -25,14 +29,22 @@ Parameters:
   Region:
     Type: String
     Default: eu-central-1
+  MemorySize:
+    Type: String
+    Default: 128
+  Timeout:
+    Type: String
+    Default: 300
 
 Resources:
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: "TestFkngShit"
+      FunctionName: !Ref FunctionName
       Runtime: python3.7
       Role: !GetAtt IAMRoleARN.Arn
+      MemorySize: !Ref MemorySize
+      Timeout: !Ref Timeout
       Code:
         S3Bucket: !Ref LambdaBucket
         S3Key: !Ref LambdaZipBucket
@@ -44,7 +56,6 @@ Resources:
           Region: !Ref Region
   
   S3Bucket:
-    DependsOn: 
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref DataSrcBucket
@@ -64,7 +75,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt LambdaFunction.Arn
       Principal: s3.amazonaws.com
-      SourceArn: !Sub arn:aws:s3:::${DataSrcBucket}/*
+      SourceArn: !Sub arn:aws:s3:::${DataSrcBucket}
 
   IAMRoleARN:
     Type: AWS::IAM::Role
@@ -81,9 +92,8 @@ Resources:
       Policies:
       - PolicyDocument:
           Statement:
-          - Effect: Allow
-            Action:
-            - s3:*
+          - Effect: "Allow"
+            Action: "*"
             Resource: 
             - !Sub arn:aws:s3:::${DataSrcBucket}/*
             - !Sub arn:aws:s3:::${DestinationBucket}/*
@@ -104,8 +114,17 @@ Resources:
             - "logs:PutLogEvents"
             Resource: "*"
         PolicyName: LogsStream
+    
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ['/', ['/aws/lambda', !Ref FunctionName]]
+      RetentionInDays: 7
   
-
+Outputs:
+  RouteTable:
+    Description: 'RouteTable'
+    Value: !GetAtt LambdaFunction.Arn
 
   #LambdaFunction:
   #  DependsOn:

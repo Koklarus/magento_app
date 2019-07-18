@@ -10,11 +10,9 @@ Parameters:
     Type: String
   MainSubnet:
     Description: EC2 subnets
-    #Default: subnet-04b672eb3d25e28e1
     Type: String  
   SecondarySubnet:
     Description: EC2 subnets
-    #Default: subnet-09e05fe3c67056f03
     Type: String
   MagentoImageId:
     Description: Magento Image Id
@@ -24,9 +22,6 @@ Parameters:
     Type: String
   EC2SecurityGroup:
     Description: Security Group Instance
-    Type: String
-  IAMProfile:
-    Description: IAM Profile
     Type: String
   IAMARN:
     Description: IAM ARN
@@ -46,13 +41,10 @@ Resources:
         - !Ref EC2SecurityGroup
         IamInstanceProfile: 
           Arn: !Ref IAMARN
-      #LaunchTemplateName: EC2LunchTemplate
 
   AutoScaling:
-    #DependsOn: EC2LunchTemplate
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      #LaunchConfigurationName: !Ref AGLunchConf
       MinSize: !Ref WebServerMinSize
       MaxSize: !Ref WebServerMaxSize
       DesiredCapacity: !Ref DesiredCapacity
@@ -90,6 +82,3 @@ Resources:
         PredefinedMetricSpecification:
           PredefinedMetricType: ASGAverageCPUUtilization
         TargetValue: 90.0
-  
-
-  #MixedInstancesPolicy:

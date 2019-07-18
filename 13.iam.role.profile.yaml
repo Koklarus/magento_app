@@ -23,6 +23,14 @@ Resources:
             - arn:aws:s3:::magento.raw.videos/*
             - arn:aws:s3:::magento.filtered.videos/*
         PolicyName: S3accessMagento
+      - PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - dynamodb:*
+            Resource: 
+            - arn:aws:dynamodb:::*
+        PolicyName: DynamoDB.access
   IAMProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
